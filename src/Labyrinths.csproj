@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Labyrinths.Core\**" />
+    <EmbeddedResource Remove="Labyrinths.Core\**" />
+    <None Remove="Labyrinths.Core\**" />
+  </ItemGroup>
+
 </Project>
