@@ -9,8 +9,11 @@
 
   <ItemGroup>
     <Compile Remove="Labyrinths.Core\**" />
+    <Compile Remove="Labyrinths.Engine\**" />
     <EmbeddedResource Remove="Labyrinths.Core\**" />
+    <EmbeddedResource Remove="Labyrinths.Engine\**" />
     <None Remove="Labyrinths.Core\**" />
+    <None Remove="Labyrinths.Engine\**" />
   </ItemGroup>
 
 </Project>

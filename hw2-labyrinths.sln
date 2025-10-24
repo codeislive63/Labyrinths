@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Labyrinths", "src\Labyrinth
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Labyrinths.Core", "src\Labyrinths.Core\Labyrinths.Core.csproj", "{BB749D9E-005C-F6B3-4B39-E7A110259451}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Labyrinths.Engine", "src\Labyrinths.Engine\Labyrinths.Engine.csproj", "{60828B0E-83FC-4ABF-94B3-DD31F2977641}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +23,15 @@ Global
 		{BB749D9E-005C-F6B3-4B39-E7A110259451}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB749D9E-005C-F6B3-4B39-E7A110259451}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB749D9E-005C-F6B3-4B39-E7A110259451}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60828B0E-83FC-4ABF-94B3-DD31F2977641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60828B0E-83FC-4ABF-94B3-DD31F2977641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60828B0E-83FC-4ABF-94B3-DD31F2977641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60828B0E-83FC-4ABF-94B3-DD31F2977641}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {967863D1-DDC6-4AF1-8FF3-7B559758C95B}
 	EndGlobalSection
 EndGlobal
