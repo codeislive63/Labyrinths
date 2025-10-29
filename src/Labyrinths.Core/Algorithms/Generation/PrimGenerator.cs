@@ -1,4 +1,5 @@
 ﻿using Labyrinths.Core.Abstractions;
+using Labyrinths.Core.Algorithms.Generation.Utils;
 using Labyrinths.Core.Models;
 using Labyrinths.Core.Randomization;
 
@@ -12,6 +13,16 @@ public sealed class PrimGenerator : IMazeGenerator
     /// <inheritdoc/>
     public Maze Generate(int width, int height, int? seed = null)
     {
+        if (width <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "Значение width должно быть > 0");
+        }
+
+        if (height <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(height), "Значение height должно быть > 0");
+        }
+
         var rnd = new RandomSource(seed);
         var maze = new Maze(width, height, CellType.Wall);
 
@@ -52,6 +63,8 @@ public sealed class PrimGenerator : IMazeGenerator
                 AddFrontier(maze, cell, frontier);
             }
         }
+
+        MazePostProcessor.EnsureCornerEntrances(maze);
 
         return maze;
     }
