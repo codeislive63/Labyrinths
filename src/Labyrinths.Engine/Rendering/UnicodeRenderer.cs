@@ -1,6 +1,7 @@
-﻿using System.Text;
-using Labyrinths.Core.Models;
+﻿using Labyrinths.Core.Models;
 using Labyrinths.Engine.Abstractions;
+using Labyrinths.Engine.Rendering.Utils;
+using System.Text;
 using Path = Labyrinths.Core.Models.Path;
 
 namespace Labyrinths.Engine.Rendering;
@@ -17,56 +18,37 @@ public sealed class UnicodeRenderer : IMazeRenderer
     /// <inheritdoc/>
     public string Render(Maze maze, Point? start = null, Point? end = null, Path? path = null)
     {
-        var sb = new StringBuilder(maze.Height * (maze.Width + 1));
+        var grid = new char[maze.Height, maze.Width];
 
-        for (var y = 0; y < maze.Height; y++)
+        for (var y = 0; y < maze.Height; ++y)
         {
-            for (var x = 0; x < maze.Width; x++)
+            for (var x = 0; x < maze.Width; ++x)
             {
-                var ch = maze[x, y] == CellType.Wall ? Wall : Space;
-
-                sb.Append(ch);
+                grid[y, x] = maze[x, y] == CellType.Wall ? Wall : Space;
             }
-
-            sb.Append('\n');
-        }
-
-        var lines = sb.ToString().Split('\n').ToList();
-
-        if (lines.Count > 0 && lines[^1] == string.Empty)
-        {
-            lines.RemoveAt(lines.Count - 1);
         }
 
         if (path is not null && path.IsFound)
         {
             foreach (var p in path.Steps)
             {
-                if (!p.Equals(start) && !p.Equals(end))
+                if (!p.Equals(start) && !p.Equals(end) && maze.InBounds(p.X, p.Y))
                 {
-                    Replace(lines, p.X, p.Y, PathChar);
+                    grid[p.Y, p.X] = PathChar;
                 }
             }
         }
 
-        if (start is Point s)
+        if (start is Point s && maze.InBounds(s.X, s.Y))
         {
-            Replace(lines, s.X, s.Y, StartChar);
+            grid[s.Y, s.X] = StartChar;
         }
 
-        if (end is Point e)
+        if (end is Point e && maze.InBounds(e.X, e.Y))
         {
-            Replace(lines, e.X, e.Y, EndChar);
+            grid[e.Y, e.X] = EndChar;
         }
 
-        return string.Join('\n', lines) + '\n';
-    }
-
-    private static void Replace(List<string> lines, int x, int y, char c)
-    {
-        var line = lines[y].ToCharArray();
-        line[x] = c;
-
-        lines[y] = new string(line);
+        return GridStringBuilder.ToString(grid);
     }
 }
