@@ -1,7 +1,8 @@
-﻿using Labyrinths.Core.Models;
+﻿using Labyrinths.Core.Abstractions;
+using Labyrinths.Core.Traversal;
 using Labyrinths.Engine.Abstractions;
+using Labyrinths.Engine.Converters;
 using Labyrinths.Engine.Rendering;
-using Labyrinths.Engine.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Labyrinths.Engine.Extensions;
@@ -12,10 +13,23 @@ public static class ServiceCollectionExtensions
     /// <summary>Добавляет в контейнер сериализатор и рендереры лабиринтов</summary>
     public static IServiceCollection AddLabyrinthsEngine(this IServiceCollection services)
     {
-        services.AddSingleton<IMazeConverter<string, Maze>, AsciiMazeConverter>();
+        services.AddSingleton<IMazeConverter<string, Core.Models.Maze>, AsciiConverter>();
 
-        services.AddSingleton<IMazeRenderer, AsciiMazeRenderer>();
+        services.AddSingleton<AsciiRenderer>();
         services.AddSingleton<UnicodeRenderer>();
+
+        services.AddSingleton<Func<bool /*unicode*/, bool /*frame*/, IMazeRenderer>>(sp => (unicode, frame) =>
+        {
+            IMazeRenderer baseRenderer = unicode
+                ? sp.GetRequiredService<UnicodeRenderer>()
+                : sp.GetRequiredService<AsciiRenderer>();
+
+            return frame
+                ? new FrameRendererDecorator(baseRenderer, unicode ? '█' : '#')
+                : baseRenderer;
+        });
+
+        services.AddSingleton<ITraversalCostAccessor, TraversalCostAccessor>();
 
         return services;
     }
