@@ -16,4 +16,14 @@
     <None Remove="Labyrinths.Engine\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Labyrinths.Core\Labyrinths.Core.csproj" />
+    <ProjectReference Include="Labyrinths.Engine\Labyrinths.Engine.csproj" />
+  </ItemGroup>
+
 </Project>
