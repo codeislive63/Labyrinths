@@ -41,16 +41,4 @@ public sealed class Maze
 
     /// <summary>Проверка на проходимость ячейки</summary>
     public bool IsPassable(int x, int y) => InBounds(x, y) && _cells[y, x] == CellType.Empty;
-
-    /// <summary>Устанавливает для всех ячеек сетки заданный тип <paramref name="type"/></summary>
-    public void Fill(CellType type)
-    {
-        for (int y = 0; y < Height; y++)
-        {
-            for (int x = 0; x < Width; x++)
-            {
-                _cells[y, x] = type;
-            }
-        }
-    }
 }
