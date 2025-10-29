@@ -4,49 +4,42 @@ using Path = Labyrinths.Core.Models.Path;
 
 namespace Labyrinths.Core.Algorithms.Solving;
 
-/// <summary>Поиск кратчайшего пути методом Дейкстры</summary>
-public sealed class DijkstraSolver : IPathSolver
+/// <summary>Дейкстра по 4-соседям</summary>
+public sealed class DijkstraSolver(ITraversalCostAccessor costAccessor) : IPathSolver
 {
-    /// <inheritdoc/>
+    private readonly ITraversalCostAccessor _costAccessor = costAccessor;
+
     public Path? Solve(Maze maze, Point start, Point end)
     {
-        if (!maze.InBounds(start.X, start.Y) || !maze.InBounds(end.X, end.Y))
-        {
-            return null;
-        }
-
-        if (!maze.IsPassable(start.X, start.Y) || !maze.IsPassable(end.X, end.Y))
-        {
-            return null;
-        }
-
-        var dist = new Dictionary<Point, int> { [start] = 0 };
+        var dist = new Dictionary<Point, double> { [start] = 0.0 };
         var prev = new Dictionary<Point, Point>();
-        var pq = new PriorityQueue<Point, int>();
 
-        pq.Enqueue(start, 0);
+        var pq = new PriorityQueue<Point, double>();
+        pq.Enqueue(start, 0.0);
 
         while (pq.TryDequeue(out var u, out _))
         {
             if (u.Equals(end))
             {
-                return Reconstruct(prev, start, end);
+                return Reconstruct(prev, u);
             }
 
-            foreach (var v in u.Neighbors4())
+            foreach (var v in Neighbors4(maze, u))
             {
-                if (!maze.InBounds(v.X, v.Y) || !maze.IsPassable(v.X, v.Y))
+                var w = _costAccessor.Current.GetCost(maze, v.X, v.Y);
+
+                if (double.IsInfinity(w))
                 {
                     continue;
                 }
 
-                var nd = dist[u] + 1;
+                var alt = dist[u] + w;
 
-                if (!dist.TryGetValue(v, out var cur) || nd < cur)
+                if (!dist.TryGetValue(v, out var dv) || alt < dv)
                 {
-                    dist[v] = nd;
+                    dist[v] = alt;
                     prev[v] = u;
-                    pq.Enqueue(v, nd);
+                    pq.Enqueue(v, alt);
                 }
             }
         }
@@ -54,25 +47,32 @@ public sealed class DijkstraSolver : IPathSolver
         return null;
     }
 
-    private static Path? Reconstruct(Dictionary<Point, Point> prev, Point start, Point end)
+    private static IEnumerable<Point> Neighbors4(Maze maze, Point p)
     {
-        var list = new List<Point>();
-        var cur = end;
+        var dirs = new (int dx, int dy)[] { (1, 0), (-1, 0), (0, 1), (0, -1) };
 
-        list.Add(cur);
-
-        while (!cur.Equals(start))
+        foreach (var (dx, dy) in dirs)
         {
-            if (!prev.TryGetValue(cur, out cur))
-            {
-                return null;
-            }
+            var nx = p.X + dx; var ny = p.Y + dy;
 
-            list.Add(cur);
+            if (maze.InBounds(nx, ny) && maze.IsPassable(nx, ny))
+            {
+                yield return new Point(nx, ny);
+            }
+        }
+    }
+
+    private static Path? Reconstruct(Dictionary<Point, Point> prev, Point last)
+    {
+        var list = new List<Point> { last };
+
+        while (prev.TryGetValue(last, out var p))
+        {
+            last = p;
+            list.Add(last);
         }
 
         list.Reverse();
-
         return new Path(list);
     }
 }
