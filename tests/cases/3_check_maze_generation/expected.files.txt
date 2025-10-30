@@ -1,5 +1,3 @@
 tests/tmp/3_check_maze_generation.txt
-###
-# #
-###
+     
 ===EOF===

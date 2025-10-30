@@ -1,1 +1,1 @@
-rm -rf tests/tmp/
+rm -rf tests/tmp

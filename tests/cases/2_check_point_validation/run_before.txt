@@ -1,0 +1,2 @@
+mkdir -p tests/tmp
+printf " \n" > tests/tmp/point_validation_maze.txt

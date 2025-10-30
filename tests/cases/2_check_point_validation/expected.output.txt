@@ -1,1 +1,1 @@
-Invalid point format: 11, expected format: x,y
+Укажите корректные точки: --start x,y --end x,y

@@ -1,1 +1,2 @@
-mkdir -p tests/tmp/
+mkdir -p tests/tmp
+rm -f tests/tmp/4_check_solve_maze.txt
