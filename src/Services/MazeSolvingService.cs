@@ -138,7 +138,7 @@ public sealed class MazeSolvingService(
             }
 
             await File.WriteAllTextAsync(output, rendered);
-            Console.WriteLine($"\nРезультат сохранён: {output}\n");
+            Console.WriteLine($"Результат сохранён: {output}");
         }
         else
         {
