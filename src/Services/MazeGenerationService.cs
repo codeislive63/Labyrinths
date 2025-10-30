@@ -60,7 +60,6 @@ public sealed class MazeGenerationService(
             await File.WriteAllTextAsync(output, preview);
 
             Console.WriteLine($"\nЛабиринт сохранён в файл: {output}\n");
-            Console.WriteLine(preview);
         }
         else
         {
