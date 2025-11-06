@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -eu
+set -eu
 #set -x
 
 # Цвета ANSI для вывода
@@ -9,187 +9,188 @@ GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 RESET='\033[0m'
 
-# Функция для вывода подробного сравнения файлов с описанием различий
+# Функция для вывода подробного сравнения файлов
 diff_with_details() {
-  local expected_file=$1
-  local actual_file=$2
-  local prefix=$3
+    local expected_file=$1
+    local actual_file=$2
+    local prefix=$3
 
-  if diff -u "$expected_file" "$actual_file" > /tmp/diff_output.txt ; then
-    return 0
-  else
-    printf "${RED}${prefix}Ожидалось:${RESET}\n"
-    sed -n '1,10p' "$expected_file" | sed 's/^/  /'
-    printf "${RED}${prefix}Получено:${RESET}\n"
-    sed -n '1,10p' "$actual_file" | sed 's/^/  /'
-    printf "${RED}${prefix}Подробности различий (diff -u):${RESET}\n"
-    sed 's/^/  /' /tmp/diff_output.txt
-    return 1
-  fi
+    local expected_clean=$(mktemp)
+    local actual_clean=$(mktemp)
+
+    # Убираем BOM и обрезаем пробелы справа
+    sed '1s/^\xEF\xBB\xBF//' "$expected_file" | sed 's/[[:space:]]*$//' > "$expected_clean"
+    sed '1s/^\xEF\xBB\xBF//' "$actual_file"   | sed 's/[[:space:]]*$//' > "$actual_clean"
+
+    # Добавляем пустую строку в конце, если ее нет
+    [[ $(tail -c1 "$expected_clean") != "" ]] && echo >> "$expected_clean"
+    [[ $(tail -c1 "$actual_clean") != "" ]]   && echo >> "$actual_clean"
+
+    if diff -u "$expected_clean" "$actual_clean" > /tmp/diff_output.txt; then
+        rm -f "$expected_clean" "$actual_clean"
+        return 0
+    else
+        printf "${RED}${prefix}Ожидалось:${RESET}\n"
+        sed -n '1,10p' "$expected_clean" | sed 's/^/  /'
+        printf "${RED}${prefix}Получено:${RESET}\n"
+        sed -n '1,10p' "$actual_clean" | sed 's/^/  /'
+        printf "${RED}${prefix}Подробности различий (diff -u):${RESET}\n"
+        sed 's/^/  /' /tmp/diff_output.txt
+        rm -f "$expected_clean" "$actual_clean"
+        return 1
+    fi
 }
 
-# Сравнение файлов из expected.files.txt
+
+
+
+# Проверка expected.files.txt
 compare_expected_files() {
-  local test_dir=$1
-  local expected_files_txt="$test_dir/expected.files.txt"
-  local failed=false
+    local test_dir=$1
+    local expected_files_txt="$test_dir/expected.files.txt"
+    local failed=false
 
-  [[ -f "$expected_files_txt" ]] || return 0
+    [[ -f "$expected_files_txt" ]] || return 0
 
-  local current_file=""
-  local current_content=""
-  # Временный файл для ожидаемого содержимого
-  local temp_expected=$(mktemp)
-  # Временный файл для фактического содержимого
-  local temp_actual=$(mktemp)
+    local current_file=""
+    local current_content=""
+    local temp_expected=$(mktemp)
+    local temp_actual=$(mktemp)
 
-  while IFS= read -r line || [[ -n "$line" ]]; do
-    if [[ -z "$current_file" ]]; then
-      current_file="$line"
-      file_path="$current_file"
-      current_content=""
-    elif [[ "$line" == "===EOF===" ]]; then
-      # Записать expected содержимое во временный файл
-      echo "$current_content" > "$temp_expected"
-      if [[ ! -f "$file_path" ]]; then
-        printf "${RED}Ожидаемый файл '$file_path' не найден${RESET}\n"
-        failed=true
-      else
-        cp "$file_path" "$temp_actual"
-        if ! diff_with_details "$temp_expected" "$temp_actual" "Файл '$current_file': "; then
-          failed=true
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ -z "$current_file" ]]; then
+            current_file="$line"
+            current_content=""
+        elif [[ "$line" == "===EOF===" ]]; then
+            echo "$current_content" > "$temp_expected"
+            if [[ ! -f "$current_file" ]]; then
+                printf "${RED}Ожидаемый файл '$current_file' не найден${RESET}\n"
+                failed=true
+            else
+                cp "$current_file" "$temp_actual"
+                if ! diff_with_details "$temp_expected" "$temp_actual" "Файл '$current_file': "; then
+                    failed=true
+                fi
+            fi
+            current_file=""
+            current_content=""
+        else
+            current_content="$current_content$line"$'\n'
         fi
-      fi
-      current_file=""
-      current_content=""
-    else
-      if [[ -z "$current_content" ]]; then
-        current_content="$line"
-      else
-        current_content="$current_content
-$line"
-      fi
-    fi
-  done < "$expected_files_txt"
+    done < "$expected_files_txt"
 
-  rm -f "$temp_expected" "$temp_actual"
+    rm -f "$temp_expected" "$temp_actual"
 
-  $failed && return 1 || return 0
+    $failed && return 1 || return 0
 }
 
-# Запуск и проверка одного теста с run_before.txt и run_after.txt
+# Запуск одного теста
 run_test_case() {
-  local test_dir=$1
-  local run_cmd_file="$test_dir/run.txt"
-  local run_before_file="$test_dir/run_before.txt"
-  local run_after_file="$test_dir/run_after.txt"
-  local input_file="$test_dir/input.txt"
-  local expected_output_file="$test_dir/expected.output.txt"
+    local test_dir=$1
+    local run_cmd_file="$test_dir/run.txt"
+    local run_before_file="$test_dir/run_before.txt"
+    local run_after_file="$test_dir/run_after.txt"
+    local input_file="$test_dir/input.txt"
+    local expected_output_file="$test_dir/expected.output.txt"
 
-  if [[ ! -f "$run_cmd_file" ]]; then
-    printf "${YELLOW}Пропущен run.txt в $test_dir${RESET}\n"
-    return 1
-  fi
-
-  # Запуск run_before.txt если есть
-  if [[ -f "$run_before_file" ]]; then
-    sh -c "$(cat "$run_before_file")"
-    local before_status=$?
-    if [[ $before_status -ne 0 ]]; then
-      printf "${RED}Ошибка при выполнении run_before.txt в $test_dir${RESET}\n"
-      return 1
+    if [[ ! -f "$run_cmd_file" ]]; then
+        printf "${YELLOW}Пропущен run.txt в $test_dir${RESET}\n"
+        return 1
     fi
-  fi
 
-  local run_cmd
-  run_cmd=$(cat "$run_cmd_file")
-
-  local output_file
-  output_file=$(mktemp)
-
-  if [[ -f "$input_file" ]]; then
-    sh -c "$run_cmd" < "$input_file" > "$output_file" 2>&1
-  else
-    sh -c "$run_cmd" > "$output_file" 2>&1
-  fi
-
-  local passed=true
-
-  # Проверка вывода
-  if [[ -f "$expected_output_file" ]]; then
-    if ! diff_with_details "$expected_output_file" "$output_file" "Вывод: "; then
-      passed=false
+    # Запуск run_before.txt если есть
+    if [[ -f "$run_before_file" ]]; then
+        sh -c "$(cat "$run_before_file")"
+        local before_status=$?
+        if [[ $before_status -ne 0 ]]; then
+            printf "${RED}Ошибка при выполнении run_before.txt в $test_dir${RESET}\n"
+            return 1
+        fi
     fi
-  fi
 
-  # Проверка файлов из expected.files.txt
-  if ! compare_expected_files "$test_dir"; then
-    passed=false
-  fi
+    local run_cmd
+    run_cmd=$(cat "$run_cmd_file")
 
-  rm -f "$output_file"
+    local output_file
+    output_file=$(mktemp)
 
-  # Запуск run_after.txt если есть, только если тест прошел
-  if $passed && [[ -f "$run_after_file" ]]; then
-    sh -c "$(cat "$run_after_file")"
-    local after_status=$?
-    if [[ $after_status -ne 0 ]]; then
-      printf "${RED}Ошибка при выполнении run_after.txt в $test_dir${RESET}\n"
-      return 1
-    fi
-  fi
+    # Определяем корень проекта (2_labyrinths)
+    local root_dir
+    root_dir=$(realpath "$test_dir/../../..")
 
-  if $passed; then
-    return 0
-  else
-    return 1
-  fi
-}
-
-# Запуск всех тестов из указанного каталога
-run_all_tests() {
-  local base_dir=$1
-  local passed=0
-  local failed=0
-
-  # if [[ ! -d "$base_dir" ]]; then
-  #   printf "${RED}Каталог $base_dir не найден${RESET}\n"
-  #   exit 1
-  # fi
-
-  local output=""
-  for test_dir in "$base_dir"/*/; do
-    [ -d "$test_dir" ] || continue
-    printf "Запускаем Тест $test_dir\n"
-    #set +e
-    output=$(run_test_case "$test_dir" 2>&1)
-    ret_code=$?
-    #set -e
-    if [ $ret_code -eq 0 ]; then
-      printf "${GREEN}Тест $test_dir: ПРОЙДЕН${RESET}\n"
-      passed=$(expr "$passed" + 1)
+    # Запуск команды из корня проекта
+    pushd "$root_dir" > /dev/null
+    if [[ -f "$input_file" ]]; then
+        eval "$run_cmd" < "$input_file" > "$output_file" 2>&1
     else
-      printf "${RED}Тест $test_dir: НЕ ПРОЙДЕН${RESET}\n"
-      printf "$output\n"
-      failed=$(expr "$failed" + 1)
+        eval "$run_cmd" > "$output_file" 2>&1
     fi
-  done
+    local cmd_status=$?
+    popd > /dev/null
 
-  printf "\n"
-  printf "ИТОГИ ПРОВЕРКИ:\n"
-  printf "${GREEN}Успешно: $passed${RESET}, ${RED}Неудачи: $failed${RESET}\n"
+    local passed=true
 
-  if [ "$failed" -gt 0 ]; then
-    exit 1
-  else
-    exit 0
-  fi
+    # Проверка вывода
+    if [[ -f "$expected_output_file" ]]; then
+        if ! diff -u <(sed 's/\r$//' "$expected_output_file") <(sed 's/\r$//' "$output_file") > /tmp/diff_output.txt; then
+            printf "${RED}Вывод не совпадает с expected.output.txt:${RESET}\n"
+            sed 's/^/  /' /tmp/diff_output.txt
+            passed=false
+        fi
+    fi
+
+    # Проверка файлов из expected.files.txt
+    if ! compare_expected_files "$test_dir"; then
+        passed=false
+    fi
+
+    if ! $passed; then
+        printf "${YELLOW}--- Полный вывод команды в тесте $test_dir ---${RESET}\n"
+        cat "$output_file"
+        printf "${YELLOW}-------------------------------------------${RESET}\n"
+    fi
+
+    rm -f "$output_file"
+
+    # Запуск run_after.txt если есть, только если тест прошел
+    if $passed && [[ -f "$run_after_file" ]]; then
+        sh -c "$(cat "$run_after_file")"
+        local after_status=$?
+        if [[ $after_status -ne 0 ]]; then
+            printf "${RED}Ошибка при выполнении run_after.txt в $test_dir${RESET}\n"
+            return 1
+        fi
+    fi
+
+    return $([ "$passed" = true ] && echo 0 || echo 1)
 }
 
-# Проверка параметров и запуск
-if [ "$#" -ne 1 ]; then
-  printf "${YELLOW}Использование: %s <каталог_тестов>${RESET}\n" "$0"
-  exit 1
-fi
+
+# Запуск всех тестов
+run_all_tests() {
+    local base_dir=$1
+    local passed=0
+    local failed=0
+
+    for test_dir in "$base_dir"/*/; do
+        [ -d "$test_dir" ] || continue
+        printf "Запускаем Тест $test_dir\n"
+        if run_test_case "$test_dir"; then
+            printf "${GREEN}Тест $test_dir: ПРОЙДЕН${RESET}\n"
+            passed=$((passed + 1))
+        else
+            printf "${RED}Тест $test_dir: НЕ ПРОЙДЕН${RESET}\n"
+            failed=$((failed + 1))
+        fi
+    done
+
+    printf "\nИТОГИ ПРОВЕРКИ:\n"
+    printf "${GREEN}Успешно: $passed${RESET}, ${RED}Неудачи: $failed${RESET}\n"
+
+    [[ $failed -gt 0 ]] && exit 1 || exit 0
+}
+
+# Проверка параметров
+[[ "$#" -ne 1 ]] && { printf "${YELLOW}Использование: %s <каталог_тестов>${RESET}\n" "$0"; exit 1; }
 
 run_all_tests "$1"
