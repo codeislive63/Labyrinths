@@ -1,3 +1,4 @@
 tests/cases/0_test/tmp/output.txt
 OK
+
 ===EOF===
