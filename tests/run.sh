@@ -26,6 +26,14 @@ diff_with_details() {
     [[ $(tail -c1 "$expected_clean") != "" ]] && echo >> "$expected_clean"
     [[ $(tail -c1 "$actual_clean") != "" ]]   && echo >> "$actual_clean"
 
+    # Гарантируем финальный перевод строки
+    if [ -s "$expected_clean" ]; then
+        grep -q '[^[:space:]]$' "$expected_clean" && echo >> "$expected_clean"
+    fi
+    if [ -s "$actual_clean" ]; then
+        grep -q '[^[:space:]]$' "$actual_clean" && echo >> "$actual_clean"
+    fi
+    
     if diff -u "$expected_clean" "$actual_clean" > /tmp/diff_output.txt; then
         rm -f "$expected_clean" "$actual_clean"
         return 0
