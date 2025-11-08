@@ -1,1 +1,1 @@
-dotnet run --project ./src/Labyrinths.csproj -- solve --algorithm=astar --file=tests/cases/4_check_maze_solving/maze.txt --start=0,0 --end=4,4 --output=tests/tmp/4_check_solve_maze.txt ; printf '\n\n' >> tests/tmp/4_check_solve_maze.txt
+dotnet run --project ./src/Labyrinths.csproj -- solve --algorithm=astar --file=tests/cases/4_check_maze_solving/maze.txt --start=0,0 --end=4,4 --output=tests/tmp/4_check_solve_maze.txt ; printf '\n' >> tests/tmp/4_check_solve_maze.txt
