@@ -13,6 +13,8 @@ public sealed class RandomSource(int? seed = null) : IRandomSource
     /// <inheritdoc/>
     public void Shuffle<T>(IList<T> list)
     {
+        ArgumentNullException.ThrowIfNull(list);
+
         for (var i = list.Count - 1; i > 0; i--)
         {
             var j = _rnd.Next(0, i + 1);
