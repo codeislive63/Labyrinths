@@ -33,17 +33,19 @@ public sealed class PrimGenerator : IMazeGenerator
         }
 
         var start = new Point(rnd.Next(0, width), rnd.Next(0, height));
-        var frontier = new List<(Point cell, Point from)>();
+        var frontier = new List<Point>();
+        var frontierSet = new HashSet<Point>();
 
         maze[start.X, start.Y] = CellType.Empty;
-        AddFrontier(maze, start, frontier);
+        AddFrontier(maze, start, frontier, frontierSet);
 
         while (frontier.Count > 0)
         {
             var idx = rnd.Next(0, frontier.Count);
-            var (cell, _) = frontier[idx];
+            var cell = frontier[idx];
 
             frontier.RemoveAt(idx);
+            frontierSet.Remove(cell);
 
             var passableNeighbors = 0;
 
@@ -60,7 +62,7 @@ public sealed class PrimGenerator : IMazeGenerator
             if (passableNeighbors == 1)
             {
                 maze[cell.X, cell.Y] = CellType.Empty;
-                AddFrontier(maze, cell, frontier);
+                AddFrontier(maze, cell, frontier, frontierSet);
             }
         }
 
@@ -69,7 +71,9 @@ public sealed class PrimGenerator : IMazeGenerator
         return maze;
     }
 
-    private static void AddFrontier(Maze maze, Point cell, List<(Point cell, Point from)> frontier)
+    private static void AddFrontier(Maze maze, Point cell, 
+        List<Point> frontier,
+        HashSet<Point> frontierSet)
     {
         foreach (var (dx, dy) in Dirs)
         {
@@ -77,7 +81,10 @@ public sealed class PrimGenerator : IMazeGenerator
 
             if (maze.InBounds(n.X, n.Y) && maze[n.X, n.Y] == CellType.Wall)
             {
-                frontier.Add((n, cell));
+                if (frontierSet.Add(n))
+                {
+                    frontier.Add(n);
+                }
             }
         }
     }
