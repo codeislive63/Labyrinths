@@ -9,8 +9,12 @@ public sealed class DijkstraSolver(ITraversalCostAccessor costAccessor) : IPathS
 {
     private readonly ITraversalCostAccessor _costAccessor = costAccessor;
 
+    private static readonly (int dx, int dy)[] Dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+
     public Path? Solve(Maze maze, Point start, Point end)
     {
+        var provider = _costAccessor.Current;
+
         var dist = new Dictionary<Point, double> { [start] = 0.0 };
         var prev = new Dictionary<Point, Point>();
 
@@ -26,7 +30,7 @@ public sealed class DijkstraSolver(ITraversalCostAccessor costAccessor) : IPathS
 
             foreach (var v in Neighbors4(maze, u))
             {
-                var w = _costAccessor.Current.GetCost(maze, v.X, v.Y);
+                var w = provider.GetCost(maze, v.X, v.Y);
 
                 if (double.IsInfinity(w))
                 {
@@ -49,9 +53,7 @@ public sealed class DijkstraSolver(ITraversalCostAccessor costAccessor) : IPathS
 
     private static IEnumerable<Point> Neighbors4(Maze maze, Point p)
     {
-        var dirs = new (int dx, int dy)[] { (1, 0), (-1, 0), (0, 1), (0, -1) };
-
-        foreach (var (dx, dy) in dirs)
+        foreach (var (dx, dy) in Dirs)
         {
             var nx = p.X + dx; var ny = p.Y + dy;
 

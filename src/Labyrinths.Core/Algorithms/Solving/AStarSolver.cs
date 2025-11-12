@@ -9,9 +9,12 @@ public sealed class AStarSolver(ITraversalCostAccessor costAccessor) : IPathSolv
 {
     private readonly ITraversalCostAccessor _costAccessor = costAccessor;
 
+    private static readonly (int dx, int dy)[] Dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+
     public Path? Solve(Maze maze, Point start, Point end)
     {
-        double minStep = _costAccessor.Current.MinStepCost;
+        var provider = _costAccessor.Current;
+        double minStep = provider.MinStepCost;
         double H(Point p) => (Math.Abs(p.X - end.X) + Math.Abs(p.Y - end.Y)) * minStep;
 
         var gScore = new Dictionary<Point, double> { [start] = 0.0 };
@@ -29,7 +32,7 @@ public sealed class AStarSolver(ITraversalCostAccessor costAccessor) : IPathSolv
 
             foreach (var n in Neighbors4(maze, current))
             {
-                var step = _costAccessor.Current.GetCost(maze, n.X, n.Y);
+                var step = provider.GetCost(maze, n.X, n.Y);
 
                 if (double.IsInfinity(step))
                 {
@@ -52,9 +55,7 @@ public sealed class AStarSolver(ITraversalCostAccessor costAccessor) : IPathSolv
 
     private static IEnumerable<Point> Neighbors4(Maze maze, Point p)
     {
-        var dirs = new (int dx, int dy)[] { (1, 0), (-1, 0), (0, 1), (0, -1) };
-
-        foreach (var (dx, dy) in dirs)
+        foreach (var (dx, dy) in Dirs)
         {
             var nx = p.X + dx; var ny = p.Y + dy;
 
