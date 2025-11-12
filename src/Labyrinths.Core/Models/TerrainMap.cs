@@ -1,17 +1,34 @@
 ﻿namespace Labyrinths.Core.Models;
 
 /// <summary>Карта покрытий для клеток лабиринта</summary>
-public sealed class TerrainMap(int width, int height)
+public sealed class TerrainMap
 {
-    public TerrainType[,] Cells { get; } = new TerrainType[width, height];
+    private readonly TerrainType[,] _cells;
 
-    public int Width { get; } = width;
+    public int Width { get; }
 
-    public int Height { get; } = height;
+    public int Height { get; }
+
+    public TerrainMap(int width, int height)
+    {
+        if (width <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "Width должно быть > 0");
+        }
+
+        if (height <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(height), "Height должно быть > 0");
+        }
+
+        Width = width;
+        Height = height;
+        _cells = new TerrainType[height, width];
+    }
 
     public TerrainType this[int x, int y]
     {
-        get => Cells[x, y];
-        set => Cells[x, y] = value;
+        get => _cells[y, x];
+        set => _cells[y, x] = value;
     }
 }
