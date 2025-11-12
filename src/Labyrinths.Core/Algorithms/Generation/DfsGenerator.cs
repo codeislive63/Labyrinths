@@ -8,6 +8,8 @@ namespace Labyrinths.Core.Algorithms.Generation;
 /// <summary>Генерация лабиринта методом поиска в глубину</summary>
 public sealed class DfsGenerator : IMazeGenerator
 {
+    private static readonly (int dx, int dy)[] Dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+
     /// <inheritdoc/>
     public Maze Generate(int width, int height, int? seed = null)
     {
@@ -33,16 +35,10 @@ public sealed class DfsGenerator : IMazeGenerator
         var start = new Point(rnd.Next(0, width), rnd.Next(0, height));
         var stack = new Stack<Point>();
 
-        var dirs = new List<(int dx, int dy)>
-        {
-            (1, 0),
-            (-1, 0),
-            (0, 1),
-            (0, -1)
-        };
-
         Carve(maze, start);
         stack.Push(start);
+
+        var dirs = (ValueTuple<int, int>[])Dirs.Clone();
 
         while (stack.Count > 0)
         {
