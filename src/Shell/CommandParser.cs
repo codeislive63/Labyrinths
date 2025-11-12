@@ -6,6 +6,8 @@ public sealed class CommandParser
     /// <summary>Разбирает аргументы и создаёт контекст команды</summary>
     public static CommandContext Parse(string[] args)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         if (args.Length == 0)
         {
             return new CommandContext(string.Empty, new Dictionary<string, string>());
