@@ -1,7 +1,7 @@
 ﻿using Labyrinths.Services;
 using Labyrinths.Shell;
 
-namespace Labyrinths.CLI;
+namespace Labyrinths.CLI.Solve;
 
 /// <summary>Команда решения лабиринта</summary>
 public sealed class SolveCommand(MazeSolvingService service) : IConsoleCommand
