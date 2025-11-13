@@ -1,6 +1,6 @@
 ﻿using Labyrinths.Shell;
 
-namespace Labyrinths.CLI;
+namespace Labyrinths.CLI.Help;
 
 /// <summary>Команда отображения справки по CLI-утилите</summary>
 public sealed class HelpCommand : IConsoleCommand
