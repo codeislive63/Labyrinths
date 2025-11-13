@@ -49,7 +49,7 @@ public sealed class MazeSolvingService(
         var maze = _converter.FromFormatToModel(raw);
 
         var mazeErrors = SolveCommandArgsValidator.Validate(opts, maze).ToList();
-        
+
         if (mazeErrors.Count != 0)
         {
             mazeErrors.ForEach(Console.Error.WriteLine);
@@ -70,9 +70,9 @@ public sealed class MazeSolvingService(
 
         Console.WriteLine($"Решение лабиринта {opts.Algorithm.ToUpperInvariant()} " +
                           $"({opts.Start.X},{opts.Start.Y})→({opts.End.X},{opts.End.Y})...");
-        
+
         var path = solver.Solve(maze, opts.Start, opts.End);
-        
+
         if (path is null || !path.IsFound)
         {
             Console.Error.WriteLine("Маршрут не найден.");

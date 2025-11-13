@@ -71,7 +71,7 @@ public sealed class PrimGenerator : IMazeGenerator
         return maze;
     }
 
-    private static void AddFrontier(Maze maze, Point cell, 
+    private static void AddFrontier(Maze maze, Point cell,
         List<Point> frontier,
         HashSet<Point> frontierSet)
     {

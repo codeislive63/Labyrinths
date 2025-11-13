@@ -68,14 +68,14 @@ public static class SolveCommandArgsParser
     private static bool TryPoint(string? value, out (int X, int Y) p)
     {
         p = default;
-        
+
         if (string.IsNullOrWhiteSpace(value))
         {
             return false;
         }
 
         var parts = value.Split(',', 2, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        
+
         if (parts.Length != 2)
         {
             return false;

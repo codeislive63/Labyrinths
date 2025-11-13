@@ -1,6 +1,6 @@
 ﻿using Labyrinths.Core.Models;
 
-namespace Labyrinths.CLI.Solve; 
+namespace Labyrinths.CLI.Solve;
 
 public static class SolveCommandArgsValidator
 {

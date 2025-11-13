@@ -55,9 +55,9 @@ public sealed class MazeGenerationService(
         return 0;
     }
 
-    private IMazeGenerator? ResolveGenerator(string algo) 
-        => _generators.FirstOrDefault(g => 
-                g.GetType().Name.StartsWith(algo, 
+    private IMazeGenerator? ResolveGenerator(string algo)
+        => _generators.FirstOrDefault(g =>
+                g.GetType().Name.StartsWith(algo,
                     StringComparison.OrdinalIgnoreCase)
         );
 }

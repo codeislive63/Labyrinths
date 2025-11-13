@@ -11,9 +11,9 @@ public interface ITerrainProvider
     /// Асинхронно загружает карту покрытий и возвращает провайдер стоимости перемещения
     /// </summary>
     Task<ITraversalCostProvider> LoadAsync(
-        string path, 
-        int mazeWidth, 
-        int mazeHeight, 
+        string path,
+        int mazeWidth,
+        int mazeHeight,
         CancellationToken ct = default
     );
 }
