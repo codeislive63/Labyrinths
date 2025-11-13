@@ -1,7 +1,7 @@
 ﻿using Labyrinths.Services;
 using Labyrinths.Shell;
 
-namespace Labyrinths.CLI;
+namespace Labyrinths.CLI.Generate;
 
 /// <summary>Команда генерации лабиринта</summary>
 public sealed class GenerateCommand(MazeGenerationService service) : IConsoleCommand
