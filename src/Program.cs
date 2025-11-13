@@ -1,8 +1,12 @@
 ﻿using Labyrinths.CLI;
+using Labyrinths.CLI.Generate;
+using Labyrinths.CLI.Help;
+using Labyrinths.CLI.Solve;
 using Labyrinths.Core.Abstractions;
 using Labyrinths.Core.Algorithms.Generation;
 using Labyrinths.Core.Algorithms.Solving;
 using Labyrinths.Engine.Extensions;
+using Labyrinths.Infrastructure.Providers;
 using Labyrinths.Services;
 using Labyrinths.Shell;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +17,7 @@ Console.OutputEncoding = System.Text.Encoding.UTF8;
 using var host = Host.CreateDefaultBuilder()
     .ConfigureServices(services =>
     {
+        // Engine
         services.AddLabyrinthsEngine();
 
         // Core: генераторы и солверы
@@ -30,6 +35,9 @@ using var host = Host.CreateDefaultBuilder()
         // сервисы
         services.AddSingleton<MazeGenerationService>();
         services.AddSingleton<MazeSolvingService>();
+
+        // Providers
+        services.AddSingleton<ITerrainProvider, JsonTerrainProvider>();
     }).Build();
 
 var context = CommandParser.Parse(args);

@@ -3,6 +3,7 @@ using Labyrinths.Core.Abstractions;
 using Labyrinths.Core.Models;
 using Labyrinths.Core.Traversal;
 using Labyrinths.Engine.Abstractions;
+using Labyrinths.Infrastructure.Providers;
 using Labyrinths.Services;
 using Labyrinths.Shell;
 using Path = System.IO.Path;
@@ -101,6 +102,15 @@ public class MazeSolvingServiceTests
         public Labyrinths.Core.Models.Path? Solve(Maze maze, Point start, Point end) => null;
     }
 
+    private sealed class StubTerrainProvider : ITerrainProvider
+    {
+        public Task<ITraversalCostProvider> LoadAsync(string path, int mazeWidth, int mazeHeight, CancellationToken ct = default)
+        {
+            var map = new TerrainMap(mazeWidth, mazeHeight);
+            return Task.FromResult<ITraversalCostProvider>(new TerrainCostProvider(map));
+        }
+    }
+
     /// <summary>Должен вернуть ошибку, если отсутствуют обязательные аргументы</summary>
     [Fact]
     public async Task Run_Should_Return_Error_When_Args_Missing()
@@ -115,7 +125,8 @@ public class MazeSolvingServiceTests
             new TraversalCostAccessor
             {
                 Current = DefaultCostProvider.Instance
-            }
+            },
+            new StubTerrainProvider()
         );
 
         var ctx = new CommandContext("solve", new Dictionary<string, string>());
@@ -136,7 +147,8 @@ public class MazeSolvingServiceTests
             new TraversalCostAccessor
             {
                 Current = DefaultCostProvider.Instance
-            }
+            },
+            new StubTerrainProvider()
         );
 
         var mazeFile = Path.Combine(Path.GetTempPath(), $"maze_{Guid.NewGuid():N}.txt");
@@ -194,7 +206,8 @@ public class MazeSolvingServiceTests
             new TraversalCostAccessor
             {
                 Current = DefaultCostProvider.Instance
-            }
+            },
+            new StubTerrainProvider()
         );
 
         var mazeFile = Path.Combine(Path.GetTempPath(), $"maze_{Guid.NewGuid():N}.txt");
@@ -251,7 +264,8 @@ public class MazeSolvingServiceTests
             new TraversalCostAccessor
             {
                 Current = DefaultCostProvider.Instance
-            }
+            },
+            new StubTerrainProvider()
         );
 
         var mazeFile = Path.Combine(Path.GetTempPath(), $"maze_{Guid.NewGuid():N}.txt");
@@ -295,7 +309,8 @@ public class MazeSolvingServiceTests
             [new AStarOkSolver()],
             F,
             new Labyrinths.Engine.Converters.AsciiConverter(),
-            accessor
+            accessor,
+            new StubTerrainProvider()
         );
 
         var mazeFile = Path.Combine(Path.GetTempPath(), $"maze_{Guid.NewGuid():N}.txt");
@@ -382,7 +397,8 @@ public class MazeSolvingServiceTests
             new TraversalCostAccessor
             {
                 Current = DefaultCostProvider.Instance
-            }
+            },
+            new StubTerrainProvider()
         );
 
         var m = EmptyMaze(3, 3);
